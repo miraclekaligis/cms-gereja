@@ -13,7 +13,7 @@ export const useApi = (url, initialData = []) => {
       setData(response.data);
       setError('');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load data');
+      setError(err.response?.data?.message || `Failed to load data from ${url}`);
     } finally {
       setLoading(false);
     }
@@ -30,7 +30,7 @@ export const useApi = (url, initialData = []) => {
         setError('');
       } catch (err) {
         if (!active) return;
-        setError(err.response?.data?.message || 'Failed to load data');
+        setError(err.response?.data?.message || `Failed to load data from ${url}`);
       } finally {
         if (active) setLoading(false);
       }

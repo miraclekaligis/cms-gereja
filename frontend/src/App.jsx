@@ -17,7 +17,9 @@ import { useApi } from './hooks/useApi';
 
 const Layout = () => {
   const { data } = useApi('/halaman');
-  const footerText = data.find((item) => item.key === 'footer_text')?.value;
+  const footerText = Array.isArray(data)
+    ? data.find((item) => item.key === 'footer_text')?.value
+    : undefined;
 
   return (
     <>

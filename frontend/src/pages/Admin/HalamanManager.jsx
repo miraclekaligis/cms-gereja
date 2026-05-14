@@ -15,7 +15,10 @@ const HalamanManager = () => {
   const { data, refetch } = useApi('/halaman');
   const [error, setError] = useState('');
 
-  const mapped = data.reduce((acc, item) => ({ ...acc, [item.key]: item.value }), {});
+  const mapped = (Array.isArray(data) ? data : []).reduce(
+    (acc, item) => ({ ...acc, [item.key]: item.value }),
+    {}
+  );
 
   const save = async (key, value) => {
     try {

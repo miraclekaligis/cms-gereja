@@ -50,7 +50,7 @@ cp .env.example .env
 
 - `JWT_SECRET`
 - `ADMIN_EMAIL`
-- `ADMIN_PASSWORD`
+- `ADMIN_PASSWORD_HASH` (bcrypt hash)
 - `GOOGLE_SHEET_ID`
 - `GOOGLE_SERVICE_ACCOUNT_EMAIL`
 - `GOOGLE_PRIVATE_KEY`
@@ -119,4 +119,11 @@ Frontend default di `http://localhost:5173`.
 
 Gunakan nilai dari `.env`:
 - Email: `ADMIN_EMAIL`
-- Password: `ADMIN_PASSWORD`
+- Password: sesuai hash di `ADMIN_PASSWORD_HASH`
+
+Contoh membuat hash password:
+
+```bash
+cd backend
+node -e "const b=require('bcryptjs'); console.log(b.hashSync('admin123',10))"
+```

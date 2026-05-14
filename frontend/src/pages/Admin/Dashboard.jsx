@@ -13,9 +13,9 @@ const Dashboard = () => {
       <section className="card">
         <h1>Dashboard Admin</h1>
         <div className="stats">
-          <p>Total Jemaat: {jemaat.length}</p>
-          <p>Total Jadwal: {jadwal.length}</p>
-          <p>Total Pengumuman: {pengumuman.length}</p>
+          <p>Total Jemaat: {Array.isArray(jemaat) ? jemaat.length : 0}</p>
+          <p>Total Jadwal: {Array.isArray(jadwal) ? jadwal.length : 0}</p>
+          <p>Total Pengumuman: {Array.isArray(pengumuman) ? pengumuman.length : 0}</p>
         </div>
         <button onClick={logout}>Logout</button>
       </section>

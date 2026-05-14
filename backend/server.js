@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const rateLimit = require('express-rate-limit');
 
 dotenv.config();
 
@@ -12,9 +13,30 @@ const halamanRoutes = require('./routes/halaman');
 const { authenticateToken } = require('./middleware/auth');
 
 const app = express();
+const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
-app.use(cors({ origin: process.env.FRONTEND_URL || '*' }));
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error('CORS origin not allowed'));
+    },
+  })
+);
 app.use(express.json());
+app.use('/api', authLimiter);
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });

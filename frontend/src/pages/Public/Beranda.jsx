@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useApi } from '../../hooks/useApi';
 
-const toMap = (rows) =>
+const toMap = (rows = []) =>
   rows.reduce((acc, row) => {
     acc[row.key] = row.value;
     return acc;
@@ -13,8 +13,10 @@ const Beranda = () => {
   const { data: pengumuman } = useApi('/pengumuman');
 
   const content = toMap(halaman);
-  const latestJadwal = jadwal.slice(0, 3);
-  const latestPengumuman = pengumuman.filter((item) => item.status !== 'draft').slice(0, 3);
+  const latestJadwal = (Array.isArray(jadwal) ? jadwal : []).slice(0, 3);
+  const latestPengumuman = (Array.isArray(pengumuman) ? pengumuman : [])
+    .filter((item) => item.status !== 'draft')
+    .slice(0, 3);
 
   return (
     <main className="container">

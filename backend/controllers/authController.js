@@ -12,10 +12,11 @@ const login = async (req, res) => {
     return res.status(401).json({ message: 'Invalid credentials' });
   }
 
-  const configuredPassword = process.env.ADMIN_PASSWORD;
-  const valid = configuredPassword
-    ? password === configuredPassword
-    : await bcrypt.compare(password, process.env.ADMIN_PASSWORD_HASH || '');
+  if (!process.env.ADMIN_PASSWORD_HASH) {
+    return res.status(500).json({ message: 'ADMIN_PASSWORD_HASH is not configured' });
+  }
+
+  const valid = await bcrypt.compare(password, process.env.ADMIN_PASSWORD_HASH);
 
   if (!valid) {
     return res.status(401).json({ message: 'Invalid credentials' });

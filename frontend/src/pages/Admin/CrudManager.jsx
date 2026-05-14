@@ -47,7 +47,7 @@ const CrudManager = ({ title, endpoint, fields }) => {
       {error && <p>{error}</p>}
       {loading && <p>Memuat data...</p>}
 
-      {data.map((item) => (
+      {(Array.isArray(data) ? data : []).map((item) => (
         <article key={item.id} className="list-item row-between">
           <div>
             <strong>{item[fields[0]]}</strong>

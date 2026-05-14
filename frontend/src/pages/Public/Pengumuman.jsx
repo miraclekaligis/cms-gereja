@@ -2,7 +2,7 @@ import { useApi } from '../../hooks/useApi';
 
 const Pengumuman = () => {
   const { data, loading, error } = useApi('/pengumuman');
-  const published = data.filter((item) => item.status !== 'draft');
+  const published = (Array.isArray(data) ? data : []).filter((item) => item.status !== 'draft');
 
   return (
     <main className="container card">

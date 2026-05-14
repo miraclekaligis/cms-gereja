@@ -2,7 +2,10 @@ import { useApi } from '../../hooks/useApi';
 
 const Tentang = () => {
   const { data } = useApi('/halaman');
-  const content = data.reduce((acc, row) => ({ ...acc, [row.key]: row.value }), {});
+  const content = (Array.isArray(data) ? data : []).reduce(
+    (acc, row) => ({ ...acc, [row.key]: row.value }),
+    {}
+  );
 
   return (
     <main className="container card">
