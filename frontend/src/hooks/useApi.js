@@ -1,32 +1,45 @@
-import { useCallback, useState } from 'react';
+import { useEffect, useState } from 'react';
 import api from '../utils/api';
 
-const useApi = (method, endpoint) => {
-  const [loading, setLoading] = useState(false);
+export const useApi = (url, initialData = []) => {
+  const [data, setData] = useState(initialData);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const execute = useCallback(async (payload, params) => {
-    setLoading(true);
-    setError('');
-
+  const refetch = async () => {
     try {
-      const response = await api.request({
-        method,
-        url: endpoint,
-        data: payload,
-        params,
-      });
-      return response.data;
+      setLoading(true);
+      const response = await api.get(url);
+      setData(response.data);
+      setError('');
     } catch (err) {
-      const message = err.response?.data?.message || 'Terjadi kesalahan pada server';
-      setError(message);
-      throw err;
+      setError(err.response?.data?.message || `Failed to load data from ${url}`);
     } finally {
       setLoading(false);
     }
-  }, [endpoint, method]);
+  };
 
-  return { execute, loading, error };
+  useEffect(() => {
+    let active = true;
+
+    (async () => {
+      try {
+        const response = await api.get(url);
+        if (!active) return;
+        setData(response.data);
+        setError('');
+      } catch (err) {
+        if (!active) return;
+        setError(err.response?.data?.message || `Failed to load data from ${url}`);
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [url]);
+
+  return { data, setData, loading, error, refetch };
 };
-
-export default useApi;

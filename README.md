@@ -1,71 +1,99 @@
-# 🏰 Church Information System (CMS) - Version 1
+# CMS Gereja - Version 1 (MVP)
 
-Sistem informasi gereja berbasis **Node.js + React + Google Sheets** untuk mengelola jemaat, jadwal ibadah, pengumuman, dan konten website.
+Sistem informasi gereja berbasis **Node.js + Express + React + Vite + Google Sheets**.
 
-## Fitur
+## Scope MVP
 
-### Website Publik
-- Beranda dengan hero section editable dari sheet `halaman`
-- Jadwal ibadah dengan filter tanggal
-- Pengumuman dengan pagination
-- Halaman tentang gereja yang editable
-- Responsive navbar dan footer
-
-### Admin Dashboard
-- Login JWT
-- Dashboard statistik
-- CRUD jemaat
-- CRUD jadwal
-- CRUD pengumuman
-- CMS key-value editor untuk konten halaman
-- Logout
+- Data jemaat
+- Jadwal ibadah
+- Pengumuman
+- Halaman website editable via CMS
 
 ## Struktur Proyek
 
 ```
-backend/   # Express API + Google Sheets integration
-frontend/  # React 18 + Vite UI
-docs/      # Setup, database, dan API docs
+cms-gereja/
+├── backend/
+│   ├── server.js
+│   ├── package.json
+│   ├── .env.example
+│   ├── config/googleSheets.js
+│   ├── routes/
+│   ├── middleware/
+│   └── controllers/
+└── frontend/
+    ├── package.json
+    └── src/
 ```
 
-## Quick Start
+## Setup Google Sheets
 
-### Backend
+Buat spreadsheet dengan sheet berikut:
+
+1. `jemaat`: `id, nama, alamat, no_hp, status, tanggal_bergabung`
+2. `jadwal`: `id, kegiatan, tanggal, jam, lokasi, deskripsi`
+3. `pengumuman`: `id, judul, isi, tanggal, status`
+4. `halaman`: `key, value`
+
+Pastikan spreadsheet dibagikan ke email service account.
+
+## Konfigurasi Backend
+
+1. Masuk ke folder backend:
+
 ```bash
 cd backend
 cp .env.example .env
-npm install
-npm run dev
 ```
 
-### Frontend
-```bash
-cd frontend
-cp .env.example .env
-npm install
-npm run dev
-```
+2. Isi `.env`:
 
-## Environment Variables
-
-Backend (`backend/.env`):
-- `PORT`
 - `JWT_SECRET`
 - `ADMIN_EMAIL`
-- `ADMIN_PASSWORD`
-- `GOOGLE_SHEETS_SPREADSHEET_ID`
-- `GOOGLE_SHEETS_CLIENT_EMAIL`
-- `GOOGLE_SHEETS_PRIVATE_KEY`
+- `ADMIN_PASSWORD_HASH` (bcrypt hash)
+- `GOOGLE_SHEET_ID`
+- `GOOGLE_SERVICE_ACCOUNT_EMAIL`
+- `GOOGLE_PRIVATE_KEY`
 
-Frontend (`frontend/.env`):
-- `VITE_API_URL`
+3. Jalankan backend:
 
-## API Endpoints
+```bash
+npm install
+npm start
+```
+
+Backend default di `http://localhost:5000`.
+
+## Konfigurasi Frontend
+
+1. Masuk ke folder frontend:
+
+```bash
+cd frontend
+npm install
+```
+
+2. Buat `.env` frontend:
+
+```bash
+VITE_API_URL=http://localhost:5000/api
+```
+
+3. Jalankan frontend:
+
+```bash
+npm run dev
+```
+
+Frontend default di `http://localhost:5173`.
+
+## API Endpoint Utama
 
 ### Auth
 - `POST /api/auth/login`
+- `GET /api/auth/verify`
 
-### Jemaat
+### Jemaat (admin token)
 - `GET /api/jemaat`
 - `POST /api/jemaat`
 - `PUT /api/jemaat/:id`
@@ -73,22 +101,29 @@ Frontend (`frontend/.env`):
 
 ### Jadwal
 - `GET /api/jadwal`
-- `POST /api/jadwal`
-- `PUT /api/jadwal/:id`
-- `DELETE /api/jadwal/:id`
+- `POST /api/jadwal` (admin)
+- `PUT /api/jadwal/:id` (admin)
+- `DELETE /api/jadwal/:id` (admin)
 
 ### Pengumuman
 - `GET /api/pengumuman`
-- `POST /api/pengumuman`
-- `PUT /api/pengumuman/:id`
-- `DELETE /api/pengumuman/:id`
+- `POST /api/pengumuman` (admin)
+- `PUT /api/pengumuman/:id` (admin)
+- `DELETE /api/pengumuman/:id` (admin)
 
-### Halaman
+### Halaman CMS
 - `GET /api/halaman`
-- `GET /api/halaman/:key`
-- `PUT /api/halaman/:key`
+- `POST /api/halaman` (admin)
 
-## Dokumentasi
-- `docs/INSTALLATION.md`
-- `docs/DATABASE_SETUP.md`
-- `docs/API_DOCS.md`
+## Login Admin Default
+
+Gunakan nilai dari `.env`:
+- Email: `ADMIN_EMAIL`
+- Password: sesuai hash di `ADMIN_PASSWORD_HASH`
+
+Contoh membuat hash password:
+
+```bash
+cd backend
+node -e "const b=require('bcryptjs'); console.log(b.hashSync('admin123',10))"
+```

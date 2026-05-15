@@ -1,15 +1,10 @@
 const express = require('express');
-const authMiddleware = require('../middleware/auth');
-const {
-  getAllHalaman,
-  getHalaman,
-  updateHalaman,
-} = require('../controllers/halamanController');
+const controller = require('../controllers/halamanController');
+const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
-router.get('/', getAllHalaman);
-router.get('/:key', getHalaman);
-router.put('/:key', authMiddleware, updateHalaman);
+router.get('/', controller.list);
+router.post('/', authenticateToken, controller.upsert);
 
 module.exports = router;

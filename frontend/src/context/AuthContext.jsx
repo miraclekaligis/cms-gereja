@@ -1,36 +1,47 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import api from '../utils/api';
-import AuthContext from './authContextObject';
+import { AuthContext } from './authContextValue';
 
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(localStorage.getItem('auth_token'));
-  const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('auth_user');
-    return saved ? JSON.parse(saved) : null;
-  });
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const login = async (email, password) => {
-    const { data } = await api.post('/auth/login', { email, password });
-    setToken(data.token);
-    setUser(data.user);
-    localStorage.setItem('auth_token', data.token);
-    localStorage.setItem('auth_user', JSON.stringify(data.user));
+    const response = await api.post('/auth/login', { email, password });
+    localStorage.setItem('token', response.data.token);
+    setUser(response.data.user);
   };
 
   const logout = () => {
-    setToken(null);
+    localStorage.removeItem('token');
     setUser(null);
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('auth_user');
   };
 
-  const value = useMemo(() => ({
-    token,
-    user,
-    isAuthenticated: Boolean(token),
-    login,
-    logout,
-  }), [token, user]);
+  useEffect(() => {
+    const verify = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await api.get('/auth/verify');
+        setUser(response.data.user);
+      } catch {
+        localStorage.removeItem('token');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    verify();
+  }, []);
+
+  const value = useMemo(
+    () => ({ user, loading, login, logout, isAuthenticated: !!user }),
+    [user, loading]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

@@ -1,44 +1,48 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import api from '../../utils/api';
+import { useApi } from '../../hooks/useApi';
+
+const defaultKeys = [
+  'hero_title',
+  'hero_subtitle',
+  'about_text',
+  'footer_text',
+  'church_address',
+  'church_phone',
+];
 
 const HalamanManager = () => {
-  const [items, setItems] = useState([]);
-  const [message, setMessage] = useState('');
+  const { data, refetch } = useApi('/halaman');
+  const [error, setError] = useState('');
 
-  const loadData = () => api.get('/halaman').then((response) => setItems(response.data));
+  const mapped = (Array.isArray(data) ? data : []).reduce(
+    (acc, item) => ({ ...acc, [item.key]: item.value }),
+    {}
+  );
 
-  useEffect(() => { loadData(); }, []);
-
-  const handleChange = (index, value) => {
-    const next = [...items];
-    next[index] = { ...next[index], value };
-    setItems(next);
-  };
-
-  const handleSave = async (key, value) => {
-    await api.put(`/halaman/${key}`, { value });
-    setMessage(`Konten ${key} berhasil disimpan`);
+  const save = async (key, value) => {
+    try {
+      await api.post('/halaman', { key, value });
+      setError('');
+      refetch();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Gagal menyimpan halaman');
+    }
   };
 
   return (
-    <main className="container">
+    <main className="container card">
       <h1>Edit Halaman Website</h1>
-      <p><Link to="/admin/dashboard">← Kembali ke Dashboard</Link></p>
-      {message && <p className="success">{message}</p>}
-      <div className="grid">
-        {items.map((item, index) => (
-          <article className="card" key={item.key}>
-            <h3>{item.key}</h3>
-            <textarea
-              rows={5}
-              value={item.value}
-              onChange={(event) => handleChange(index, event.target.value)}
-            />
-            <button type="button" onClick={() => handleSave(item.key, item.value)}>Simpan</button>
-          </article>
-        ))}
-      </div>
+      {error && <p>{error}</p>}
+      {defaultKeys.map((key) => (
+        <div key={key} className="list-item">
+          <label>{key}</label>
+          <textarea
+            defaultValue={mapped[key] || ''}
+            onBlur={(event) => save(key, event.target.value)}
+          />
+        </div>
+      ))}
     </main>
   );
 };

@@ -1,28 +1,46 @@
-import { useEffect, useMemo, useState } from 'react';
-import api from '../../utils/api';
+import { Link } from 'react-router-dom';
+import { useApi } from '../../hooks/useApi';
+
+const toMap = (rows = []) =>
+  rows.reduce((acc, row) => {
+    acc[row.key] = row.value;
+    return acc;
+  }, {});
 
 const Beranda = () => {
-  const [halaman, setHalaman] = useState([]);
+  const { data: halaman } = useApi('/halaman');
+  const { data: jadwal } = useApi('/jadwal');
+  const { data: pengumuman } = useApi('/pengumuman');
 
-  useEffect(() => {
-    api.get('/halaman').then((response) => setHalaman(response.data)).catch(() => setHalaman([]));
-  }, []);
-
-  const content = useMemo(() => {
-    const map = Object.fromEntries(halaman.map((item) => [item.key, item.value]));
-    return {
-      heroTitle: map.hero_title || 'Selamat Datang di Gereja Kami',
-      heroSubtitle: map.hero_subtitle || 'Komunitas iman yang bertumbuh bersama.',
-      churchAddress: map.church_address || 'Alamat gereja belum diatur',
-    };
-  }, [halaman]);
+  const content = toMap(halaman);
+  const latestJadwal = (Array.isArray(jadwal) ? jadwal : []).slice(0, 3);
+  const latestPengumuman = (Array.isArray(pengumuman) ? pengumuman : [])
+    .filter((item) => item.status !== 'draft')
+    .slice(0, 3);
 
   return (
-    <section className="hero-section card">
-      <h1>{content.heroTitle}</h1>
-      <p>{content.heroSubtitle}</p>
-      <p><strong>Alamat:</strong> {content.churchAddress}</p>
-    </section>
+    <main className="container">
+      <section className="card hero">
+        <h1>{content.hero_title || 'Selamat Datang di Gereja Kami'}</h1>
+        <p>{content.hero_subtitle || 'Kasih, Iman, dan Pelayanan'}</p>
+      </section>
+
+      <section className="card">
+        <h3>Jadwal Ibadah Terbaru</h3>
+        {latestJadwal.map((item) => (
+          <p key={item.id}>{item.tanggal} {item.jam} - {item.kegiatan}</p>
+        ))}
+        <Link to="/jadwal">Lihat semua jadwal</Link>
+      </section>
+
+      <section className="card">
+        <h3>Pengumuman Terbaru</h3>
+        {latestPengumuman.map((item) => (
+          <p key={item.id}><strong>{item.judul}</strong> - {item.tanggal}</p>
+        ))}
+        <Link to="/pengumuman">Lihat semua pengumuman</Link>
+      </section>
+    </main>
   );
 };
 

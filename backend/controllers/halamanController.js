@@ -1,43 +1,41 @@
-const { getData, getHalamanByKey, upsertHalamanByKey } = require('../services/sheetService');
+const {
+  getRows,
+  appendRow,
+  updateRowById,
+} = require('../config/googleSheets');
 
-const getAllHalaman = async (_req, res, next) => {
+const headers = ['key', 'value'];
+
+const list = async (_req, res, next) => {
   try {
-    const data = await getData('halaman');
-    res.json(data);
+    const rows = await getRows('halaman', headers);
+    res.json(rows);
   } catch (error) {
     next(error);
   }
 };
 
-const getHalaman = async (req, res, next) => {
+const upsert = async (req, res, next) => {
   try {
-    const page = await getHalamanByKey(req.params.key);
+    const { key, value } = req.body;
+    if (!key) return res.status(400).json({ message: 'key is required' });
 
-    if (!page) {
-      return res.status(404).json({ message: 'Konten halaman tidak ditemukan' });
+    const rows = await getRows('halaman', headers);
+    const found = rows.find((row) => row.key === key);
+
+    if (found) {
+      await updateRowById('halaman', headers, key, { key, value: value || '' });
+      return res.json({ key, value: value || '' });
     }
 
-    return res.json(page);
-  } catch (error) {
-    return next(error);
-  }
-};
-
-const updateHalaman = async (req, res, next) => {
-  try {
-    if (!req.body.value) {
-      return res.status(400).json({ message: 'Value wajib diisi' });
-    }
-
-    const updated = await upsertHalamanByKey(req.params.key, req.body.value);
-    return res.json(updated);
+    await appendRow('halaman', [key, value || '']);
+    return res.status(201).json({ key, value: value || '' });
   } catch (error) {
     return next(error);
   }
 };
 
 module.exports = {
-  getAllHalaman,
-  getHalaman,
-  updateHalaman,
+  list,
+  upsert,
 };

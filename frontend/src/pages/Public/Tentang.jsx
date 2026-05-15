@@ -1,24 +1,19 @@
-import { useEffect, useState } from 'react';
-import api from '../../utils/api';
-
-const defaultContent = "Gereja kami hadir untuk melayani jemaat dan masyarakat.";
+import { useApi } from '../../hooks/useApi';
 
 const Tentang = () => {
-  const [content, setContent] = useState(defaultContent);
-
-  useEffect(() => {
-    api.get('/halaman/about_text').then((response) => {
-      setContent(response.data.value || defaultContent);
-    }).catch(() => {
-      setContent(defaultContent);
-    });
-  }, []);
+  const { data } = useApi('/halaman');
+  const content = (Array.isArray(data) ? data : []).reduce(
+    (acc, row) => ({ ...acc, [row.key]: row.value }),
+    {}
+  );
 
   return (
-    <section className="card">
+    <main className="container card">
       <h1>Tentang Gereja</h1>
-      <p>{content}</p>
-    </section>
+      <p>{content.about_text || 'Informasi gereja dapat dikelola melalui dashboard admin.'}</p>
+      <p><strong>Alamat:</strong> {content.church_address || '-'}</p>
+      <p><strong>Telepon:</strong> {content.church_phone || '-'}</p>
+    </main>
   );
 };
 

@@ -1,17 +1,12 @@
 const express = require('express');
-const authMiddleware = require('../middleware/auth');
-const {
-  createPengumuman,
-  deletePengumuman,
-  getAllPengumuman,
-  updatePengumuman,
-} = require('../controllers/pengumumanController');
+const controller = require('../controllers/pengumumanController');
+const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
-router.get('/', getAllPengumuman);
-router.post('/', authMiddleware, createPengumuman);
-router.put('/:id', authMiddleware, updatePengumuman);
-router.delete('/:id', authMiddleware, deletePengumuman);
+router.get('/', controller.list);
+router.post('/', authenticateToken, controller.create);
+router.put('/:id', authenticateToken, controller.update);
+router.delete('/:id', authenticateToken, controller.remove);
 
 module.exports = router;

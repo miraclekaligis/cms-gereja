@@ -1,37 +1,22 @@
-import { useEffect, useMemo, useState } from 'react';
-import api from '../../utils/api';
+import { useApi } from '../../hooks/useApi';
 
 const Jadwal = () => {
-  const [jadwal, setJadwal] = useState([]);
-  const [filterDate, setFilterDate] = useState('');
-
-  useEffect(() => {
-    api.get('/jadwal').then((response) => setJadwal(response.data)).catch(() => setJadwal([]));
-  }, []);
-
-  const filtered = useMemo(
-    () => jadwal.filter((item) => !filterDate || item.tanggal === filterDate),
-    [filterDate, jadwal],
-  );
+  const { data, loading, error } = useApi('/jadwal');
 
   return (
-    <section>
+    <main className="container card">
       <h1>Jadwal Ibadah</h1>
-      <label className="filter">
-        Filter tanggal
-        <input type="date" value={filterDate} onChange={(event) => setFilterDate(event.target.value)} />
-      </label>
-      <div className="grid">
-        {filtered.map((item) => (
-          <article className="card" key={item.id}>
-            <h3>{item.kegiatan}</h3>
-            <p>{item.tanggal} - {item.jam}</p>
-            <p>{item.lokasi}</p>
-            <p>{item.deskripsi}</p>
-          </article>
-        ))}
-      </div>
-    </section>
+      {loading && <p>Memuat data...</p>}
+      {error && <p>{error}</p>}
+      {(Array.isArray(data) ? data : []).map((item) => (
+        <article key={item.id} className="list-item">
+          <h3>{item.kegiatan}</h3>
+          <p>{item.tanggal} • {item.jam}</p>
+          <p>{item.lokasi}</p>
+          <p>{item.deskripsi}</p>
+        </article>
+      ))}
+    </main>
   );
 };
 

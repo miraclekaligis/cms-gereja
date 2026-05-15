@@ -1,17 +1,12 @@
 const express = require('express');
-const authMiddleware = require('../middleware/auth');
-const {
-  createJadwal,
-  deleteJadwal,
-  getAllJadwal,
-  updateJadwal,
-} = require('../controllers/jadwalController');
+const controller = require('../controllers/jadwalController');
+const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
-router.get('/', getAllJadwal);
-router.post('/', authMiddleware, createJadwal);
-router.put('/:id', authMiddleware, updateJadwal);
-router.delete('/:id', authMiddleware, deleteJadwal);
+router.get('/', controller.list);
+router.post('/', authenticateToken, controller.create);
+router.put('/:id', authenticateToken, controller.update);
+router.delete('/:id', authenticateToken, controller.remove);
 
 module.exports = router;
