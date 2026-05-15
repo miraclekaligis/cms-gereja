@@ -1,20 +1,20 @@
 const jwt = require('jsonwebtoken');
 
 const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers.authorization || '';
-  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
-    return res.status(401).json({ message: 'Unauthorized: token required' });
+    return res.status(401).json({ message: 'Access token required' });
   }
 
-  try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = payload;
-    return next();
-  } catch {
-    return res.status(403).json({ message: 'Forbidden: invalid token' });
-  }
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ message: 'Invalid or expired token' });
+    }
+    req.user = user;
+    next();
+  });
 };
 
 module.exports = { authenticateToken };
